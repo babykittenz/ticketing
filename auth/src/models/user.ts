@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Password } from "../services/password";
 
 // an interface that describes the properties
 // that are required to create a new User
@@ -31,11 +32,20 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+userSchema.pre("save", async function (done) {
+  if (this.isModified("password")) {
+    const hashed = await Password.toHash(this.get("password"));
+    this.set("password", hashed);
+  }
+  done();
+});
+
 // we build user to make sure that we can use TypeScript to enforce the type of the attributes that we pass in since mongoose does not do this by default
 // we also define build as a method on the User model so that we can call it directly on the User model
 userSchema.statics.build = (attrs: UserAttrs) => {
   return new User(attrs);
 };
+
 const User = mongoose.model<UserDoc, UserModel>("User", userSchema);
 
 export { User };
