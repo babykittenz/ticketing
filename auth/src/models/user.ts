@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// creating a pre save hook to hash the password before saving it to the database
 userSchema.pre("save", async function (done) {
   if (this.isModified("password")) {
     const hashed = await Password.toHash(this.get("password"));
